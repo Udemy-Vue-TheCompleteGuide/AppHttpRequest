@@ -1,17 +1,60 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <h2>Posts</h2>
+    <table class="table table-striped" v-if="posts.length > 0">
+      <thead>
+      <tr>
+        <th>Title</th>
+        <th>Content</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr v-for="post in posts" :key="post.id">
+        <td>{{ post.title }}</td>
+        <td>{{ post.content }}</td>
+      </tr>
+      </tbody>
+    </table>
+    <p v-else>No Data</p>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import axios from 'axios';
 
 export default {
   name: 'App',
-  components: {
-    HelloWorld
+  data() {
+    return {
+      posts: []
+    }
+  },
+  components: {},
+  methods: {
+    getPosts() {
+      return axios.get('https://blog-abc.firebaseio.com/posts.json')
+          .then((res) => {
+            let posts = [];
+            const data = res.data;
+            for (const key in data) {
+              // eslint-disable-next-line no-prototype-builtins
+              if (data.hasOwnProperty(key)) {
+                const p = data[key];
+                posts.push({id: key, title: p.title, content: p.content});
+              }
+            }
+            return posts;
+          });
+    }
+  },
+  created() {
+    this.getPosts()
+        .then((posts) => {
+          this.posts = posts;
+        })
+        .catch((err) => {
+          console.log('My error', err);
+        });
   }
 }
 </script>
